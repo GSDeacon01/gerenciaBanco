@@ -1,0 +1,198 @@
+package gerenciaBanco;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+import java.util.Random;
+
+public class Main extends JFrame implements ActionListener {
+    private JButton logarButton;
+    private BankAccount bankAccount;
+
+    public Main() {
+        super("Banco do Trabalho");
+
+        bankAccount = new BankAccount();
+
+        JLabel nameLabel = new JLabel("Bem-vindo, " + bankAccount.getName() + " da Silva");
+        JLabel cpfLabel = new JLabel("CPF: " + bankAccount.getCpf());
+        JLabel balanceLabel = new JLabel("Saldo: R$" + formatBalance(bankAccount.getBalance()));
+
+        logarButton = new JButton("Logar");
+        logarButton.addActionListener(this);
+
+        JPanel panel = new JPanel(new GridLayout(4, 1));
+        panel.add(new JLabel("Banco do Trabalho"));
+        panel.add(nameLabel);
+        panel.add(cpfLabel);
+        panel.add(balanceLabel);
+        panel.add(logarButton);
+
+        add(panel);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(300, 200);
+        setLocationRelativeTo(null); // Centraliza a janela na tela
+        setVisible(true);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == logarButton) {
+            new MenuFrame(bankAccount);
+            dispose(); // Fecha a janela atual após abrir a próxima
+        }
+    }
+
+    public static void main(String[] args) {
+        new Main();
+    }
+
+    private String formatBalance(double balance) {
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        return df.format(balance);
+    }
+}
+
+class MenuFrame extends JFrame implements ActionListener {
+    private BankAccount bankAccount;
+    private JLabel balanceLabel;
+
+    public MenuFrame(BankAccount bankAccount) {
+        super("Menu");
+
+        this.bankAccount = bankAccount;
+
+        JLabel nameLabel = new JLabel("Bem-vindo, " + bankAccount.getName() + " da Silva");
+        JLabel cpfLabel = new JLabel("CPF: " + bankAccount.getCpf());
+        balanceLabel = new JLabel("Saldo: R$" + formatBalance(bankAccount.getBalance()));
+
+        JButton showInfoButton = new JButton("Exibir informações da conta");
+        showInfoButton.addActionListener(this);
+
+        JButton depositButton = new JButton("Depositar");
+        depositButton.addActionListener(this);
+
+        JButton withdrawButton = new JButton("Sacar");
+        withdrawButton.addActionListener(this);
+
+        JPanel panel = new JPanel(new GridLayout(4, 1));
+        panel.add(nameLabel);
+        panel.add(cpfLabel);
+        panel.add(balanceLabel);
+        panel.add(showInfoButton);
+        panel.add(depositButton);
+        panel.add(withdrawButton);
+
+        add(panel);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(300, 200);
+        setLocationRelativeTo(null); // Centraliza a janela na tela
+        setVisible(true);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getActionCommand().equals("Exibir informações da conta")) {
+            JOptionPane.showMessageDialog(this, bankAccount.getAccountInfo());
+        } else if (e.getActionCommand().equals("Depositar")) {
+            String input = JOptionPane.showInputDialog(this, "Informe o valor a depositar:");
+            if (input != null && !input.isEmpty()) {
+                double amount = Double.parseDouble(input);
+                bankAccount.deposit(amount);
+                balanceLabel.setText("Saldo: R$" + formatBalance(bankAccount.getBalance()));
+                JOptionPane.showMessageDialog(this, "Depósito realizado com sucesso.");
+            }
+        } else if (e.getActionCommand().equals("Sacar")) {
+            String input = JOptionPane.showInputDialog(this, "Informe o valor a sacar:");
+            if (input != null && !input.isEmpty()) {
+                double amount = Double.parseDouble(input);
+                if (bankAccount.withdraw(amount)) {
+                    balanceLabel.setText("Saldo: R$" + formatBalance(bankAccount.getBalance()));
+                    JOptionPane.showMessageDialog(this, "Saque realizado com sucesso.");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Valor inválido ou saldo insuficiente.");
+                }
+            }
+        }
+    }
+
+    private String formatBalance(double balance) {
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        return df.format(balance);
+    }
+}
+
+class BankAccount {
+    private String name;
+    private String cpf;
+    private double balance;
+
+    public BankAccount() {
+        this.name = "João";
+        this.cpf = generateRandomCPF();
+        this.balance = generateRandomBalance();
+    }
+
+    private String generateRandomCPF() {
+        Random random = new Random();
+        int n1 = random.nextInt(10);
+        int n2 = random.nextInt(10);
+        int n3 = random.nextInt(10);
+        int n4 = random.nextInt(10);
+        int n5 = random.nextInt(10);
+        int n6 = random.nextInt(10);
+        int n7 = random.nextInt(10);
+        int n8 = random.nextInt(10);
+        int n9 = random.nextInt(10);
+        int d1 = n9 * 2 + n8 * 3 + n7 * 4 + n6 * 5 + n5 * 6 + n4 * 7 + n3 * 8 + n2 * 9 + n1 * 10;
+        d1 = 11 - (d1 % 11);
+        if (d1 >= 10) {
+            d1 = 0;
+        }
+        int d2 = d1 * 2 + n9 * 3 + n8 * 4 + n7 * 5 + n6 * 6 + n5 * 7 + n4 * 8 + n3 * 9 + n2 * 10 + n1 * 11;
+        d2 = 11 - (d2 % 11);
+        if (d2 >= 10) {
+            d2 = 0;
+        }
+        return "" + n1 + n2 + n3 + "." + n4 + n5 + n6 + "." + n7 + n8 + n9 + "-" + d1 + d2;
+    }
+
+    private double generateRandomBalance() {
+        return 1000 + new Random().nextDouble() * 9000; // Entre 1000 e 10000
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public String getAccountInfo() {
+        return "Nome: " + name + " da Silva" + "\nCPF: " + cpf + "\nSaldo: R$" + formatBalance(balance);
+    }
+
+    public void deposit(double amount) {
+        if (amount > 0) {
+            balance += amount;
+        }
+    }
+
+    public boolean withdraw(double amount) {
+        if (amount > 0 && amount <= balance) {
+            balance -= amount;
+            return true;
+        }
+        return false;
+    }
+
+    private String formatBalance(double balance) {
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        return df.format(balance);
+    }
+}
